@@ -5,185 +5,289 @@ document.addEventListener('DOMContentLoaded', function() {
     // DOM Elements
     const checkoutForm = document.getElementById('checkout-form');
     const checkoutItemsContainer = document.getElementById('checkout-items');
-    const subtotalElement = document.getElementById('checkout-subtotal');
-    const taxElement = document.getElementById('checkout-tax');
-    const shippingElement = document.getElementById('checkout-shipping');
-    const totalElement = document.getElementById('checkout-total');
-    const cartCountElement = document.getElementById('cart-count');
-    
-    // Confirmation modal elements
+    const checkoutSubtotal = document.getElementById('checkout-subtotal');
+    const checkoutTax = document.getElementById('checkout-tax');
+    const checkoutShipping = document.getElementById('checkout-shipping');
+    const checkoutTotal = document.getElementById('checkout-total');
     const confirmationModal = document.getElementById('confirmation-modal');
-    const closeConfirmationButton = confirmationModal.querySelector('.close');
-    const orderNumberElement = document.getElementById('order-number');
+    const orderIdElement = document.getElementById('order-id');
     const confirmationEmailElement = document.getElementById('confirmation-email');
+    const closeConfirmationButton = confirmationModal.querySelector('.close');
+    const continueButton = document.getElementById('continue-button');
     
-    // Format price to currency string
-    function formatPrice(price) {
-        return '$' + price.toFixed(2);
-    }
+    // Default shipping cost
+    const shippingCost = 5.00;
     
-    // Update cart count badge
-    function updateCartCount() {
-        const count = cartManager.getItemCount();
-        cartCountElement.textContent = count;
-        
-        // Hide count if zero
-        if (count === 0) {
-            cartCountElement.style.display = 'none';
-        } else {
-            cartCountElement.style.display = 'flex';
-        }
-    }
-    
-    // Generate a random order number
-    function generateOrderNumber() {
-        const orderDate = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-        return `ORD-${orderDate}-${randomNum}`;
-    }
-    
-    // Validate the checkout form
-    function validateForm() {
-        // Basic validation
-        const requiredFields = checkoutForm.querySelectorAll('[required]');
-        let isValid = true;
-        
-        requiredFields.forEach(field => {
-            if (!field.value.trim()) {
-                isValid = false;
-                field.classList.add('error');
-            } else {
-                field.classList.remove('error');
-            }
-        });
-        
-        // Card validation (very basic for demo)
-        const cardNumber = document.getElementById('card-number');
-        if (cardNumber.value.trim() && !/^\d{16}$/.test(cardNumber.value.replace(/\s/g, ''))) {
-            isValid = false;
-            cardNumber.classList.add('error');
-        }
-        
-        const expiry = document.getElementById('expiry');
-        if (expiry.value.trim() && !/^\d{2}\/\d{2}$/.test(expiry.value)) {
-            isValid = false;
-            expiry.classList.add('error');
-        }
-        
-        const cvv = document.getElementById('cvv');
-        if (cvv.value.trim() && !/^\d{3,4}$/.test(cvv.value)) {
-            isValid = false;
-            cvv.classList.add('error');
-        }
-        
-        return isValid;
-    }
-    
-    // Display cart items in the order summary
-    function displayCartItems() {
-        const cart = cartManager.getCart();
-        checkoutItemsContainer.innerHTML = '';
-        
-        if (cart.length === 0) {
-            checkoutItemsContainer.innerHTML = '<p class="empty-cart-message">Your cart is empty.</p>';
+    /**
+     * Initialize checkout page
+     */
+    function init() {
+        // Check if cart has items
+        if (cartManager.getItems().length === 0) {
+            // Redirect to shop page if cart is empty
+            window.location.href = 'index.html';
             return;
         }
         
-        cart.forEach(item => {
+        // Display order summary
+        displayOrderSummary();
+        
+        // Update cart count badge
+        cartManager.updateCartCount();
+        
+        // Set up event listeners
+        setupEventListeners();
+    }
+    
+    /**
+     * Display order summary
+     */
+    function displayOrderSummary() {
+        // Display cart items
+        displayCartItems();
+        
+        // Update summary totals
+        updateSummaryTotals();
+    }
+    
+    /**
+     * Display cart items in checkout
+     */
+    function displayCartItems() {
+        if (!checkoutItemsContainer) return;
+        
+        // Clear container
+        checkoutItemsContainer.innerHTML = '';
+        
+        // Get cart items
+        const items = cartManager.getItems();
+        
+        // Create item elements
+        items.forEach(item => {
             const itemElement = document.createElement('div');
-            itemElement.className = 'cart-item';
+            itemElement.className = 'checkout-item';
             
             itemElement.innerHTML = `
-                <div class="cart-item-image">
+                <div class="item-image">
                     <img src="${item.image}" alt="${item.name}">
                 </div>
-                <div class="cart-item-details">
-                    <div class="cart-item-name">${item.name}</div>
-                    <div class="cart-item-price">${formatPrice(item.price)} × ${item.quantity}</div>
+                <div class="item-details">
+                    <h4>${item.name}</h4>
+                    <p>${formatCurrency(item.price)} × ${item.quantity}</p>
                 </div>
-                <div class="cart-item-total">
-                    ${formatPrice(item.price * item.quantity)}
+                <div class="item-total">
+                    ${formatCurrency(item.price * item.quantity)}
                 </div>
             `;
             
             checkoutItemsContainer.appendChild(itemElement);
         });
-        
-        updateOrderSummary();
     }
     
-    // Update order summary totals
-    function updateOrderSummary() {
+    /**
+     * Update summary totals
+     */
+    function updateSummaryTotals() {
         const subtotal = cartManager.getSubtotal();
-        const tax = cartManager.calculateTax(subtotal);
-        const shipping = 5.99; // Fixed shipping cost
-        const total = subtotal + tax + shipping;
+        const tax = cartManager.getTax();
+        const total = subtotal + tax + shippingCost;
         
-        subtotalElement.textContent = formatPrice(subtotal);
-        taxElement.textContent = formatPrice(tax);
-        shippingElement.textContent = formatPrice(shipping);
-        totalElement.textContent = formatPrice(total);
-    }
-    
-    // Show the confirmation modal
-    function showConfirmationModal(email) {
-        const orderNumber = generateOrderNumber();
-        orderNumberElement.textContent = orderNumber;
-        confirmationEmailElement.textContent = email;
-        
-        confirmationModal.style.display = 'block';
-        document.body.style.overflow = 'hidden';
-    }
-    
-    // Close the confirmation modal
-    function closeConfirmationModal() {
-        confirmationModal.style.display = 'none';
-        document.body.style.overflow = '';
-    }
-    
-    // Process the checkout
-    function processCheckout(e) {
-        e.preventDefault();
-        
-        if (cartManager.getCart().length === 0) {
-            alert('Your cart is empty. Please add items before checking out.');
-            return;
+        if (checkoutSubtotal) {
+            checkoutSubtotal.textContent = formatCurrency(subtotal);
         }
         
+        if (checkoutTax) {
+            checkoutTax.textContent = formatCurrency(tax);
+        }
+        
+        if (checkoutShipping) {
+            checkoutShipping.textContent = formatCurrency(shippingCost);
+        }
+        
+        if (checkoutTotal) {
+            checkoutTotal.textContent = formatCurrency(total);
+        }
+    }
+    
+    /**
+     * Set up event listeners
+     */
+    function setupEventListeners() {
+        // Checkout form submission
+        if (checkoutForm) {
+            checkoutForm.addEventListener('submit', handleCheckoutSubmit);
+        }
+        
+        // Close confirmation modal
+        if (closeConfirmationButton) {
+            closeConfirmationButton.addEventListener('click', closeConfirmationModal);
+        }
+        
+        // Continue shopping button
+        if (continueButton) {
+            continueButton.addEventListener('click', function() {
+                window.location.href = 'index.html';
+            });
+        }
+        
+        // Input validation for card number (numbers only)
+        const cardNumberInput = document.getElementById('card-number');
+        if (cardNumberInput) {
+            cardNumberInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^\d\s]/g, '');
+            });
+        }
+        
+        // Input validation for expiry date (MM/YY format)
+        const expiryDateInput = document.getElementById('expiry-date');
+        if (expiryDateInput) {
+            expiryDateInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^\d/]/g, '');
+                if (this.value.length === 2 && !this.value.includes('/')) {
+                    this.value += '/';
+                }
+            });
+        }
+        
+        // Input validation for CVV (numbers only)
+        const cvvInput = document.getElementById('cvv');
+        if (cvvInput) {
+            cvvInput.addEventListener('input', function() {
+                this.value = this.value.replace(/\D/g, '');
+            });
+        }
+    }
+    
+    /**
+     * Handle checkout form submission
+     * @param {Event} event - Form submit event
+     */
+    function handleCheckoutSubmit(event) {
+        event.preventDefault();
+        
+        // Validate form
         if (!validateForm()) {
-            alert('Please correct the errors in the form.');
             return;
         }
         
-        // In a real app, this would send data to a payment processor
-        // For this demo, we'll just show confirmation and clear the cart
+        // Process order
+        processOrder();
+    }
+    
+    /**
+     * Validate checkout form
+     * @returns {boolean} Validation result
+     */
+    function validateForm() {
+        // Get form inputs
+        const fullName = document.getElementById('full-name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const city = document.getElementById('city').value.trim();
+        const state = document.getElementById('state').value.trim();
+        const zip = document.getElementById('zip').value.trim();
+        const country = document.getElementById('country').value;
+        const cardName = document.getElementById('card-name').value.trim();
+        const cardNumber = document.getElementById('card-number').value.trim();
+        const expiryDate = document.getElementById('expiry-date').value.trim();
+        const cvv = document.getElementById('cvv').value.trim();
         
-        const email = document.getElementById('email').value;
+        // Check required fields
+        if (!fullName || !email || !address || !city || !state || !zip || !country || 
+            !cardName || !cardNumber || !expiryDate || !cvv) {
+            showNotification('Please fill in all required fields', 'error');
+            return false;
+        }
         
-        // "Process payment" - in a real app, this would call a payment API
+        // Validate email
+        if (!isValidEmail(email)) {
+            showNotification('Please enter a valid email address', 'error');
+            return false;
+        }
+        
+        // Validate card number (simple check for 16 digits)
+        const cardNumberClean = cardNumber.replace(/\s/g, '');
+        if (cardNumberClean.length !== 16 || isNaN(cardNumberClean)) {
+            showNotification('Please enter a valid card number', 'error');
+            return false;
+        }
+        
+        // Validate expiry date (MM/YY format)
+        const expiryPattern = /^(0[1-9]|1[0-2])\/([0-9]{2})$/;
+        if (!expiryPattern.test(expiryDate)) {
+            showNotification('Please enter a valid expiry date (MM/YY)', 'error');
+            return false;
+        }
+        
+        // Validate CVV (3 or 4 digits)
+        if (cvv.length < 3 || cvv.length > 4 || isNaN(cvv)) {
+            showNotification('Please enter a valid CVV', 'error');
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Process order
+     */
+    function processOrder() {
+        // Generate order ID
+        const orderId = generateOrderId();
+        
+        // Get customer email
+        const email = document.getElementById('email').value.trim();
+        
+        // Simulate order processing (would normally send to a server)
         setTimeout(() => {
-            // Clear the cart
+            // Clear cart
             cartManager.clearCart();
-            updateCartCount();
             
-            // Show confirmation
-            showConfirmationModal(email);
+            // Show confirmation modal
+            showConfirmationModal(orderId, email);
         }, 1000);
     }
     
-    // Event Listeners
-    checkoutForm.addEventListener('submit', processCheckout);
-    
-    closeConfirmationButton.addEventListener('click', closeConfirmationModal);
-    
-    // Close modal when clicking outside
-    window.addEventListener('click', function(event) {
-        if (event.target === confirmationModal) {
-            closeConfirmationModal();
+    /**
+     * Show confirmation modal
+     * @param {string} orderId - Order ID
+     * @param {string} email - Customer email
+     */
+    function showConfirmationModal(orderId, email) {
+        if (!confirmationModal) return;
+        
+        // Set order ID and email
+        if (orderIdElement) {
+            orderIdElement.textContent = orderId;
         }
-    });
+        
+        if (confirmationEmailElement) {
+            confirmationEmailElement.textContent = email;
+        }
+        
+        // Show modal
+        confirmationModal.style.display = 'flex';
+        
+        // Add body class to prevent scrolling
+        document.body.classList.add('modal-open');
+    }
     
-    // Initialize
-    displayCartItems();
-    updateCartCount();
+    /**
+     * Close confirmation modal
+     */
+    function closeConfirmationModal() {
+        if (!confirmationModal) return;
+        
+        // Hide modal
+        confirmationModal.style.display = 'none';
+        
+        // Remove body class
+        document.body.classList.remove('modal-open');
+        
+        // Redirect to shop page
+        window.location.href = 'index.html';
+    }
+    
+    // Initialize checkout page
+    init();
 });

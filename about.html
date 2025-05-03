@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MerchStore - About Us</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>MerchStore</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Shop</a></li>
+                    <li><a href="about.html" class="active">About</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </nav>
+            <div class="cart-icon">
+                <a href="#" id="cart-button">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span id="cart-count">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h2>About MerchStore</h2>
+                <p>The story behind our unique merchandise</p>
+            </div>
+        </section>
+
+        <section class="about-content container">
+            <div class="about-section">
+                <h3>Our Story</h3>
+                <p>Welcome to MerchStore, a small business with big dreams and a bigger sense of humor! I'm the founder and chief meme curator, passionate about bringing unique, conversation-starting merchandise to people who don't take themselves too seriously.</p>
+                
+                <p>What started as a side project in my garage has grown into a full-fledged online store dedicated to products that make people smile, laugh, and occasionally snort their coffee through their nose (sorry about that).</p>
+            </div>
+
+            <div class="about-section">
+                <h3>Our Philosophy</h3>
+                <p>At MerchStore, we proudly embrace the fact that our products are designed primarily for entertainment value. Our merchandise isn't meant to compete with luxury brands or high-end fashion – it's intentionally designed to be fun, quirky, and occasionally absurd.</p>
+                
+                <p>While we maintain professional standards in our customer service and operations, we want to be transparent: our products are meant to be joke wear, meme wear, and conversation starters. They're for people who understand that sometimes, the best accessories are the ones that don't take themselves too seriously.</p>
+            </div>
+
+            <div class="about-section">
+                <h3>Quality & Value</h3>
+                <p>Though our products are designed with humor in mind, we still care about providing you with merchandise that won't fall apart after one wash. We source materials that balance affordability with basic durability, allowing us to keep prices reasonable while ensuring you can enjoy your purchase for more than just one social media post.</p>
+                
+                <p>Each product is designed with care, printed with attention to detail, and shipped with the hope that it brings a little extra joy to your day.</p>
+            </div>
+
+            <div class="about-section">
+                <h3>Join Our Community</h3>
+                <p>MerchStore isn't just a store – it's a community of like-minded individuals who appreciate the humor in everyday life. We're constantly updating our collection based on the latest memes, trends, and customer suggestions.</p>
+                
+                <p>Whether you're buying for yourself or looking for the perfect gag gift, we're grateful you've found us. Thank you for supporting a small business with a big personality!</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Your Cart</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="cart-items">
+                    <!-- Cart items will be inserted here -->
+                </div>
+                <div id="cart-summary">
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span id="cart-subtotal">$0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tax (8%):</span>
+                        <span id="cart-tax">$0.00</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total:</span>
+                        <span id="cart-total">$0.00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="continue-shopping" class="button secondary">Continue Shopping</button>
+                <button id="checkout-button" class="button primary">Proceed to Checkout</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 MerchStore. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/utils.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/store.js"></script>
+</body>
+</html>

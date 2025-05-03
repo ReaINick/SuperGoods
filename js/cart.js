@@ -16,7 +16,7 @@ class CartManager {
             try {
                 this.cart = JSON.parse(savedCart);
             } catch (e) {
-                console.error('Error loading cart from local storage:', e);
+                console.error('Error loading cart from localStorage:', e);
                 this.cart = [];
             }
         }
@@ -27,143 +27,252 @@ class CartManager {
      */
     saveCart() {
         localStorage.setItem('merchStoreCart', JSON.stringify(this.cart));
-    }
-
-    /**
-     * Get all items in cart
-     * @returns {Array} Cart items array
-     */
-    getCart() {
-        return this.cart;
-    }
-
-    /**
-     * Get cart item count
-     * @returns {number} Total number of items in cart
-     */
-    getItemCount() {
-        return this.cart.reduce((total, item) => total + item.quantity, 0);
+        this.updateCartCount();
     }
 
     /**
      * Add item to cart
-     * @param {number} productId - Product ID to add
-     * @param {number} quantity - Quantity to add (default: 1)
-     * @returns {boolean} True if item added successfully, false otherwise
+     * @param {number} productId - Product ID
+     * @param {number} quantity - Quantity to add
+     * @returns {boolean} Success status
      */
     addItem(productId, quantity = 1) {
-        // Validate product exists and is in stock
         const product = productsManager.getProductById(productId);
-        if (!product || !productsManager.isInStock(productId)) {
+        
+        if (!product) {
+            console.error('Product not found:', productId);
             return false;
         }
-
+        
+        if (!productsManager.isInStock(productId, quantity)) {
+            showNotification('Sorry, this item is out of stock or not enough quantity available.', 'error');
+            return false;
+        }
+        
         // Check if product already in cart
         const existingItem = this.cart.find(item => item.productId === productId);
         
         if (existingItem) {
-            // Ensure we don't exceed available stock
-            const newQuantity = existingItem.quantity + quantity;
-            if (newQuantity > product.stock) {
-                return false;
-            }
-            existingItem.quantity = newQuantity;
+            existingItem.quantity += quantity;
         } else {
-            // Add new item to cart
             this.cart.push({
                 productId,
                 quantity,
+                price: product.price, // Store the current price
                 name: product.name,
-                price: product.price,
                 image: product.image
             });
         }
-
+        
         this.saveCart();
+        showNotification(`${product.name} added to cart`, 'success');
         return true;
     }
 
     /**
      * Remove item from cart
-     * @param {number} productId - Product ID to remove
-     * @returns {boolean} True if item removed successfully, false if not found
+     * @param {number} productId - Product ID
+     * @returns {boolean} Success status
      */
     removeItem(productId) {
         const initialLength = this.cart.length;
         this.cart = this.cart.filter(item => item.productId !== productId);
         
-        const removed = initialLength > this.cart.length;
-        if (removed) {
+        if (this.cart.length !== initialLength) {
             this.saveCart();
+            return true;
         }
         
-        return removed;
+        return false;
     }
 
     /**
      * Update item quantity
-     * @param {number} productId - Product ID to update
+     * @param {number} productId - Product ID
      * @param {number} quantity - New quantity
-     * @returns {boolean} True if updated successfully, false otherwise
+     * @returns {boolean} Success status
      */
     updateQuantity(productId, quantity) {
-        // Validate quantity
-        if (quantity < 1) {
+        if (quantity <= 0) {
             return this.removeItem(productId);
         }
-
-        const product = productsManager.getProductById(productId);
-        if (!product || quantity > product.stock) {
-            return false;
-        }
-
+        
         const item = this.cart.find(item => item.productId === productId);
         if (!item) {
             return false;
         }
-
+        
+        // Check if enough stock
+        if (!productsManager.isInStock(productId, quantity)) {
+            showNotification('Sorry, not enough stock available for this quantity.', 'error');
+            return false;
+        }
+        
         item.quantity = quantity;
         this.saveCart();
         return true;
     }
 
     /**
-     * Calculate cart subtotal
-     * @returns {number} Cart subtotal
-     */
-    getSubtotal() {
-        return this.cart.reduce((total, item) => {
-            return total + (item.price * item.quantity);
-        }, 0);
-    }
-
-    /**
-     * Calculate tax amount
-     * @param {number} subtotal - Subtotal amount
-     * @returns {number} Tax amount
-     */
-    calculateTax(subtotal = this.getSubtotal()) {
-        // Default tax rate of 8%
-        return subtotal * 0.08;
-    }
-
-    /**
-     * Calculate order total
-     * @param {number} subtotal - Subtotal amount
-     * @param {number} tax - Tax amount
-     * @param {number} shipping - Shipping amount
-     * @returns {number} Order total
-     */
-    calculateTotal(subtotal = this.getSubtotal(), tax = this.calculateTax(), shipping = 0) {
-        return subtotal + tax + shipping;
-    }
-
-    /**
-     * Clear the cart
+     * Clear cart
      */
     clearCart() {
         this.cart = [];
         this.saveCart();
+    }
+
+    /**
+     * Get cart items
+     * @returns {Array} Cart items
+     */
+    getItems() {
+        return this.cart;
+    }
+
+    /**
+     * Get cart item count
+     * @returns {number} Total items in cart
+     */
+    getItemCount() {
+        return this.cart.reduce((total, item) => total + item.quantity, 0);
+    }
+
+    /**
+     * Get cart subtotal
+     * @returns {number} Cart subtotal
+     */
+    getSubtotal() {
+        return this.cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    }
+
+    /**
+     * Get cart tax
+     * @param {number} taxRate - Tax rate as decimal (default: 0.08 for 8%)
+     * @returns {number} Cart tax amount
+     */
+    getTax(taxRate = 0.08) {
+        return calculateTax(this.getSubtotal(), taxRate);
+    }
+
+    /**
+     * Get cart total
+     * @param {number} taxRate - Tax rate as decimal (default: 0.08 for 8%)
+     * @returns {number} Cart total
+     */
+    getTotal(taxRate = 0.08) {
+        return this.getSubtotal() + this.getTax(taxRate);
+    }
+
+    /**
+     * Update cart count badge
+     */
+    updateCartCount() {
+        const cartCountElement = document.getElementById('cart-count');
+        if (cartCountElement) {
+            cartCountElement.textContent = this.getItemCount();
+        }
+    }
+
+    /**
+     * Render cart items to DOM
+     * @param {HTMLElement} container - Container element
+     */
+    renderCartItems(container) {
+        if (!container) return;
+        
+        // Clear container
+        container.innerHTML = '';
+        
+        // If cart is empty
+        if (this.cart.length === 0) {
+            container.innerHTML = '<div class="empty-cart">Your cart is empty</div>';
+            return;
+        }
+        
+        // Create cart items
+        this.cart.forEach(item => {
+            const cartItem = document.createElement('div');
+            cartItem.className = 'cart-item';
+            
+            cartItem.innerHTML = `
+                <div class="item-image">
+                    <img src="${item.image}" alt="${item.name}">
+                </div>
+                <div class="item-details">
+                    <h3>${item.name}</h3>
+                    <p>${formatCurrency(item.price)}</p>
+                </div>
+                <div class="item-quantity">
+                    <button class="quantity-btn" data-action="decrease" data-product-id="${item.productId}">-</button>
+                    <span>${item.quantity}</span>
+                    <button class="quantity-btn" data-action="increase" data-product-id="${item.productId}">+</button>
+                </div>
+                <div class="item-price">
+                    ${formatCurrency(item.price * item.quantity)}
+                </div>
+                <div class="item-remove">
+                    <button class="remove-btn" data-product-id="${item.productId}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(cartItem);
+        });
+        
+        // Add event listeners for quantity buttons
+        container.querySelectorAll('.quantity-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const productId = parseInt(button.dataset.productId);
+                const action = button.dataset.action;
+                const item = this.cart.find(item => item.productId === productId);
+                
+                if (!item) return;
+                
+                if (action === 'increase') {
+                    this.updateQuantity(productId, item.quantity + 1);
+                } else if (action === 'decrease') {
+                    this.updateQuantity(productId, item.quantity - 1);
+                }
+                
+                // Re-render cart
+                this.renderCartItems(container);
+                this.updateCartSummary();
+            });
+        });
+        
+        // Add event listeners for remove buttons
+        container.querySelectorAll('.remove-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const productId = parseInt(button.dataset.productId);
+                this.removeItem(productId);
+                
+                // Re-render cart
+                this.renderCartItems(container);
+                this.updateCartSummary();
+            });
+        });
+    }
+
+    /**
+     * Update cart summary
+     */
+    updateCartSummary() {
+        const subtotalElement = document.getElementById('cart-subtotal');
+        const taxElement = document.getElementById('cart-tax');
+        const totalElement = document.getElementById('cart-total');
+        
+        if (subtotalElement) {
+            subtotalElement.textContent = formatCurrency(this.getSubtotal());
+        }
+        
+        if (taxElement) {
+            taxElement.textContent = formatCurrency(this.getTax());
+        }
+        
+        if (totalElement) {
+            totalElement.textContent = formatCurrency(this.getTotal());
+        }
     }
 }
 

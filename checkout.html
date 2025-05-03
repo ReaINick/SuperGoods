@@ -30,128 +30,142 @@
     </header>
 
     <main>
-        <section class="checkout-container container">
-            <h2>Checkout</h2>
-            
-            <div class="checkout-grid">
-                <div class="checkout-form">
-                    <h3>Shipping Information</h3>
-                    <form id="checkout-form">
+        <section class="checkout-header">
+            <div class="container">
+                <h2>Checkout</h2>
+                <p>Complete your purchase</p>
+            </div>
+        </section>
+
+        <section class="checkout-content container">
+            <div class="checkout-form-container">
+                <form id="checkout-form">
+                    <div class="form-section">
+                        <h3>Contact Information</h3>
                         <div class="form-group">
-                            <label for="name">Full Name</label>
-                            <input type="text" id="name" name="name" required>
+                            <label for="full-name">Full Name</label>
+                            <input type="text" id="full-name" name="full-name" required>
                         </div>
-                        
                         <div class="form-group">
                             <label for="email">Email Address</label>
                             <input type="email" id="email" name="email" required>
                         </div>
-                        
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Shipping Address</h3>
                         <div class="form-group">
                             <label for="address">Street Address</label>
                             <input type="text" id="address" name="address" required>
                         </div>
-                        
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="city">City</label>
                                 <input type="text" id="city" name="city" required>
                             </div>
-                            
                             <div class="form-group">
-                                <label for="state">State</label>
+                                <label for="state">State/Province</label>
                                 <input type="text" id="state" name="state" required>
                             </div>
                         </div>
-                        
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="zip">ZIP Code</label>
+                                <label for="zip">ZIP/Postal Code</label>
                                 <input type="text" id="zip" name="zip" required>
                             </div>
-                            
                             <div class="form-group">
                                 <label for="country">Country</label>
-                                <input type="text" id="country" name="country" required value="United States">
+                                <select id="country" name="country" required>
+                                    <option value="">Select Country</option>
+                                    <option value="US">United States</option>
+                                    <option value="CA">Canada</option>
+                                    <option value="GB">United Kingdom</option>
+                                    <option value="AU">Australia</option>
+                                    <option value="DE">Germany</option>
+                                    <option value="FR">France</option>
+                                    <option value="JP">Japan</option>
+                                    <option value="Other">Other</option>
+                                </select>
                             </div>
                         </div>
-                        
+                    </div>
+
+                    <div class="form-section">
                         <h3>Payment Information</h3>
-                        
-                        <div class="form-group">
-                            <label for="card-number">Card Number</label>
-                            <input type="text" id="card-number" name="card-number" placeholder="**** **** **** ****" required>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="expiry">Expiry Date</label>
-                                <input type="text" id="expiry" name="expiry" placeholder="MM/YY" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="cvv">CVV</label>
-                                <input type="text" id="cvv" name="cvv" placeholder="***" required>
-                            </div>
-                        </div>
-                        
                         <div class="form-group">
                             <label for="card-name">Name on Card</label>
                             <input type="text" id="card-name" name="card-name" required>
                         </div>
-                        
-                        <div class="button-container">
-                            <a href="index.html" class="button secondary">Return to Store</a>
-                            <button type="submit" class="button primary">Complete Order</button>
+                        <div class="form-group">
+                            <label for="card-number">Card Number</label>
+                            <input type="text" id="card-number" name="card-number" placeholder="XXXX XXXX XXXX XXXX" required>
                         </div>
-                    </form>
-                </div>
-                
-                <div class="order-summary">
-                    <h3>Order Summary</h3>
-                    <div id="checkout-items">
-                        <!-- Items will be inserted here -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="expiry-date">Expiration Date</label>
+                                <input type="text" id="expiry-date" name="expiry-date" placeholder="MM/YY" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="cvv">CVV</label>
+                                <input type="text" id="cvv" name="cvv" placeholder="XXX" required>
+                            </div>
+                        </div>
                     </div>
-                    <div class="summary-details">
-                        <div class="summary-row">
-                            <span>Subtotal:</span>
-                            <span id="checkout-subtotal">$0.00</span>
-                        </div>
-                        <div class="summary-row">
-                            <span>Tax (8%):</span>
-                            <span id="checkout-tax">$0.00</span>
-                        </div>
-                        <div class="summary-row">
-                            <span>Shipping:</span>
-                            <span id="checkout-shipping">$5.99</span>
-                        </div>
-                        <div class="summary-row total">
-                            <span>Total:</span>
-                            <span id="checkout-total">$0.00</span>
-                        </div>
+
+                    <div class="form-actions">
+                        <a href="index.html" class="button secondary">Return to Cart</a>
+                        <button type="submit" class="button primary">Complete Order</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="order-summary">
+                <h3>Order Summary</h3>
+                <div id="checkout-items" class="checkout-items">
+                    <!-- Checkout items will be inserted here -->
+                </div>
+                <div class="checkout-summary">
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span id="checkout-subtotal">$0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tax (8%):</span>
+                        <span id="checkout-tax">$0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping:</span>
+                        <span id="checkout-shipping">$5.00</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total:</span>
+                        <span id="checkout-total">$0.00</span>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Order Confirmation Modal -->
+    <!-- Confirmation Modal -->
     <div id="confirmation-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Order Confirmed!</h2>
+                <h2>Order Confirmation</h2>
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
                 <div class="confirmation-message">
                     <i class="fas fa-check-circle"></i>
-                    <p>Thank you for your purchase!</p>
-                    <p>Your order number is: <span id="order-number"></span></p>
-                    <p>A confirmation email has been sent to <span id="confirmation-email"></span></p>
+                    <h3>Thank You for Your Order!</h3>
+                    <p>Your order has been placed successfully.</p>
+                    <div class="order-details">
+                        <p><strong>Order ID:</strong> <span id="order-id"></span></p>
+                        <p><strong>Confirmation email sent to:</strong> <span id="confirmation-email"></span></p>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <a href="index.html" class="button primary">Return to Store</a>
+                <button id="continue-button" class="button primary">Continue Shopping</button>
             </div>
         </div>
     </div>
@@ -163,6 +177,7 @@
     </footer>
 
     <script src="js/products.js"></script>
+    <script src="js/utils.js"></script>
     <script src="js/cart.js"></script>
     <script src="js/checkout.js"></script>
 </body>

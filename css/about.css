@@ -1,0 +1,84 @@
+/* About Page Specific Styles */
+
+.about-content {
+    padding: 40px 0 60px;
+}
+
+.about-section {
+    margin-bottom: 40px;
+}
+
+.about-section h3 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-size: 24px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.about-section h3:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 50px;
+    height: 3px;
+    background-color: var(--accent-color);
+}
+
+.about-section p {
+    margin-bottom: 20px;
+    line-height: 1.8;
+    color: var(--text-color);
+}
+
+/* Team section could be added later */
+.team-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.team-member {
+    text-align: center;
+}
+
+.team-photo {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 20px;
+    border: 5px solid var(--light-gray);
+}
+
+.team-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.team-member h4 {
+    margin-bottom: 5px;
+    color: var(--primary-color);
+}
+
+.team-member p.position {
+    color: var(--dark-gray);
+    font-style: italic;
+    margin-bottom: 10px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .about-section h3 {
+        font-size: 22px;
+    }
+}
+
+@media (max-width: 576px) {
+    .about-section h3 {
+        font-size: 20px;
+    }
+}
